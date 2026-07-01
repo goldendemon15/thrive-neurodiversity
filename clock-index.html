@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Multi-Timezone Digital Clock - Display current time across multiple time zones with automatic updates">
+<meta name="theme-color" content="#1a1a2e">
+<title>Multi-Timezone Digital Clock</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Courier New', monospace;
+  color: #e0e0e0;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Focus & Accessibility */
+:focus-visible {
+  outline: 3px solid #00d4ff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Main Container */
+.container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+}
+
+.header p {
+  font-size: 1rem;
+  color: #b0b0b0;
+  margin-bottom: 1.5rem;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  animation: slideUp 0.6s ease-out 0.1s both;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn {
+  background: rgba(0, 212, 255, 0.1);
+  border: 2px solid #00d4ff;
+  color: #00d4ff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.btn:hover {
+  background: rgba(0, 212, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 212, 255, 0.2);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn.primary {
+  background: #00d4ff;
+  color: #1a1a2e;
+  border-color: #00d4ff;
+}
+
+.btn.primary:hover {
+  background: #00b8d4;
+  box-shadow: 0 12px 24px rgba(0, 212, 255, 0.3);
+}
+
+.btn-icon {
+  font-size: 1.1rem;
+}
+
+/* Search Box */
+.search-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+.search-input {
+  flex: 1;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  color: #e0e0e0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #00d4ff;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #666;
+}
+
+/* Clock Grid */
+.clock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  animation: fadeIn 0.8s ease-out 0.3s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Clock Card */
+.clock-card {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(0, 153, 204, 0.05));
+  border: 2px solid rgba(0, 212, 255, 0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.clock-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.clock-card:hover::before {
+  left: 100%;
+}
+
+.clock-card:hover {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 204, 0.1));
+  border-color: rgba(0, 212, 255, 0.4);
+  transform: translateY(-8px);
+  box-shadow: 0 16px 32px rgba(0, 212, 255, 0.15);
+}
+
+.clock-card.current {
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), inset 0 0 20px rgba(0, 212, 255, 0.05);
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 204, 0.1));
+}
+
+.clock-card.current::after {
+  content: 'LOCAL TIME';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #00d4ff;
+  color: #1a1a2e;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Timezone Label */
+.tz-label {
+  font-size: 0.85rem;
+  color: #00d4ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.tz-name {
+  font-size: 1.1rem;
+  color: #e0e0e0;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Digital Time Display */
+.digital-time {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #00d4ff;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  margin: 1.5rem 0;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Date Display */
+.date-display {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  margin-bottom: 1rem;
+}
+
+/* Offset Information */
+.offset-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #80b0ff;
+  margin-bottom: 1rem;
+}
+
+.offset-badge {
+  background: rgba(128, 176, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Remove Button */
+.remove-btn {
+  background: rgba(255, 100, 100, 0.1);
+  border: 2px solid rgba(255, 100, 100, 0.3);
+  color: #ff6464;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.remove-btn:hover {
+  background: rgba(255, 100, 100, 0.2);
+  border-color: rgba(255, 100, 100, 0.5);
+  box-shadow: 0 4px 12px rgba(255, 100, 100, 0.15);
+}
+
+/* Empty State */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #666;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Timezone Selector */
+.tz-selector {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: rgba(26, 26, 46, 0.95);
+  border: 2px solid #00d4ff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 400px;
+  max-height: 60vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s ease-out;
+  z-index: 1000;
+  display: none;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tz-selector.open {
+  display: block;
+}
+
+.tz-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.tz-selector-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00d4ff;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #00d4ff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  transform: rotate(90deg);
+}
+
+.tz-list {
+  list-style: none;
+}
+
+.tz-item {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+.tz-item:hover {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.tz-item.selected {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: #00d4ff;
+  color: #00d4ff;
+  font-weight: 600;
+}
+
+/* Scrollbar Styling */
+.tz-selector::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tz-selector::-webkit-scrollbar-track {
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 4px;
+}
+
+.tz-selector::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 4px;
+}
+
+.tz-selector::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.5);
+}
+
+.tz-selector {
+  scrollbar-color: rgba(0, 212, 255, 0.3) rgba(0, 212, 255, 0.05);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.footer a {
+  color: #00d4ff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: #00b8d4;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.8rem;
+  }
+
+  .digital-time {
+    font-size: 2.2rem;
+  }
+
+  .clock-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-input {
+    max-width: 100%;
+  }
+
+  .tz-selector {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    max-width: none;
+    max-height: 50vh;
+  }
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 212, 255, 0.9);
+  color: #1a1a2e;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  animation: slideUpToast 0.3s ease-out;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+@keyframes slideUpToast {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.toast.hide {
+  animation: slideDownToast 0.3s ease-out forwards;
+}
+
+@keyframes slideDownToast {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}
+
+/* Loading State */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 212, 255, 0.3);
+  border-top-color: #00d4ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>⏰ Multi-Timezone Clock</h1>
+    <p>Track time across the world in real-time</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn primary" onclick="openTimezoneSelector()" aria-label="Add a new timezone">
+      <i class="ti ti-plus"></i>
+      Add Timezone
+    </button>
+    <button class="btn" onclick="toggleFormat()" aria-label="Toggle between 12-hour and 24-hour format">
+      <i class="ti ti-clock-24"></i>
+      <span id="format-label">24-hour</span>
+    </button>
+    <button class="btn" onclick="resetToDefault()" aria-label="Reset to default timezones">
+      <i class="ti ti-reload"></i>
+      Reset
+    </button>
+  </div>
+
+  <!-- Search Container -->
+  <div class="search-container">
+    <input 
+      type="text" 
+      class="search-input" 
+      id="search-input" 
+      placeholder="Search timezones..." 
+      aria-label="Search timezones"
+    >
+  </div>
+
+  <!-- Clock Grid -->
+  <div class="clock-grid" id="clock-grid">
+    <!-- Clocks will be generated here -->
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <i class="ti ti-world-off"></i>
+    <p>No timezones selected. Click "Add Timezone" to get started.</p>
+  </div>
+</div>
+
+<!-- Timezone Selector -->
+<div class="tz-selector" id="tz-selector">
+  <div class="tz-selector-header">
+    <div class="tz-selector-title">Select Timezone</div>
+    <button class="close-btn" onclick="closeTimezoneSelector()" aria-label="Close timezone selector">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+  <ul class="tz-list" id="tz-list">
+    <!-- Timezone list will be generated here -->
+  </ul>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Built with ❤️ | Auto-updates every second | <a href="#" onclick="showAbout(); return false;">About</a></p>
+</div>
+
+<script src="clock.js" defer></script>
+</body>
+</html>
